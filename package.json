@@ -1,0 +1,26 @@
+{
+  "name": "cordova-plugin-zgsoftDeepLink",
+  "version": "1.0.0",
+  "cordova": {
+    "id": "cordova-plugin-zgsoftDeepLink",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "description": "zgsoft Deeplinks Plugin",
+  "repository": "https://github.com/headchen/ZgsoftDeepLink.git",
+  "issue": "https://github.com/headchen/ZgsoftDeepLink/issues",
+  "keywords": [
+    "ionic",
+    "cordova",
+    "deeplink",
+    "deeplinks",
+    "mobile",
+    "hybrid",
+    "cordova-android",
+    "cordova-ios"
+  ],
+  "author": "zgsoft headchen",
+  "license": "MIT"
+}
