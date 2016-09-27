@@ -104,6 +104,7 @@ public class DeepLinkPlugin extends CordovaPlugin
     private void subscribe(final CallbackContext callbackContext)
     {
         this.subscriber = callbackContext;
+        checkFirstRunEvent(this.cordova.getActivity().getApplicationContext());
         tryToConsumeEvent();
     }
 
