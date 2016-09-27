@@ -2,8 +2,11 @@ package com.zgsoft.cordova;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
@@ -14,6 +17,13 @@ import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.DataInput;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * Created by headchen on 2016-09-13.
@@ -166,6 +176,7 @@ public class DeepLinkPlugin extends CordovaPlugin
 
         // if app was not launched by the url - ignore
         if (!Intent.ACTION_VIEW.equals(action) || launchUri == null) {
+            Log.d(TAG, "launchUri is null or action != VIEW");
             return;
         }
 
@@ -193,6 +204,128 @@ public class DeepLinkPlugin extends CordovaPlugin
         }
     }
 
+    //检查第一次运行时的信息
+    private  void checkFirstRunEvent(Context context)
+    {
+       if(storedEvent!=null || !checkFirstRun(context))
+           return;
+
+        String url = getPkgComment(context);
+        if(url == null)
+            return;
+         storedEvent = createEventFromUrl(Uri.parse(url));
+    }
+
+
+    // endregion
+
+    // region first laughch get install info
+
+
+    private boolean checkFirstRun(Context context) {
+
+        final String PREFS_NAME = "com.zgsoft.prefs";
+        final String PREF_VERSION_CODE_KEY = "version_code";
+        final int DOESNT_EXIST = -1;
+       // String packageName=null;
+
+
+        // Get current version code
+        int currentVersionCode = 0;
+        try {
+            PackageInfo packageInfo =context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            currentVersionCode =packageInfo.versionCode;
+            //packageName = packageInfo.packageName;
+
+        } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+            // handle exception
+            e.printStackTrace();
+            return false;
+        }
+
+
+        // Get saved version code
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE);
+        int savedVersionCode = prefs.getInt(PREF_VERSION_CODE_KEY, DOESNT_EXIST);
+
+        // Check for first run or upgrade
+        if (currentVersionCode == savedVersionCode) {
+
+            // This is just a normal run
+            return false;
+
+        } else {
+            // Update the shared preferences with the current version code
+            prefs.edit().putInt(PREF_VERSION_CODE_KEY, currentVersionCode).commit();
+            return true;
+        }
+
+    }
+
+    @Nullable
+    private static String getPkgComment(final Context context)
+    {
+        File file=new File(context.getApplicationInfo().sourceDir);
+        try {
+            String result= readZipComment(file);
+            Log.i(TAG,"pkgComment : " + result);
+            return result;
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+  //读取short
+    private static short readShort(DataInput input) throws IOException {
+        byte[] buf = new byte[SHORT_LENGTH];
+        input.readFully(buf);
+        ByteBuffer bb = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN);
+        return bb.getShort(0);
+    }
+
+    static  final  int SHORT_LENGTH = 2;
+    static final String UTF_8 = "UTF-8";
+
+    @Nullable
+    public static String readZipComment(File file) throws IOException
+    {
+        RandomAccessFile raf = null;
+        try
+        {
+            raf = new RandomAccessFile(file, "r");
+            long index = raf.length();
+                index -= SHORT_LENGTH;
+                raf.seek(index);
+                // read content length field
+                int length = readShort(raf);
+                if (length > 2)
+                {
+                    length -=SHORT_LENGTH; //因为后面的长度增加 了最后的short
+                    index -= length ;
+                    raf.seek(index);
+                    // read content bytes
+                    byte[] bytesComment = new byte[length];
+                    raf.readFully(bytesComment);
+                    return new String(bytesComment, UTF_8);
+                }
+                else
+                {
+                    return null;
+                }
+
+        }
+        finally
+        {
+            if (raf != null)
+            {
+                raf.close();
+            }
+        }
+    }
 
     // endregion
 }
