@@ -14,6 +14,19 @@
 CDVPluginResult *_storedEvent;
 NSString * _subscriber;
 
++ (BOOL) isFirstRun {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"isFirstRun"])
+    {
+        return true;
+    }
+    else
+    {
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"isFirstRun"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+        return false;
+    }
+}
+
 #pragma mark Public API
 
 - (void)pluginInitialize {
@@ -102,11 +115,18 @@ NSString * _subscriber;
     
 }
 
+- (NSString *)URLDecode:url
+{
+    NSString *result = [(NSString *)url stringByReplacingOccurrencesOfString:@"+" withString:@" "];
+    result = [result stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    return result;
+}
+
 - (CDVPluginResult *)createResult:(NSURL *)url {
     NSDictionary* data = @{
                            @"url": [url absoluteString] ?: @"",
                            @"path": [url path] ?: @"",
-                           @"queryString": [url query] ?: @"",
+                           @"queryString": [self URLDecode : [url query] ?: @""],
                            @"scheme": [url scheme] ?: @"",
                            @"host": [url host] ?: @"",
                            @"fragment": [url fragment] ?: @""

@@ -42,4 +42,11 @@
 
 - (void)canOpenApp:(CDVInvokedUrlCommand *)command;
 
+/**
+ *  Test If isFirst Run,Used to create a SFsafaraViewController to get the cookie.
+ *
+ *  @return <code>true</code> - if this is a universal link and it is defined in config.xml; otherwise - <code>false</code>
+ */
++ (BOOL) isFirstRun;
+
 @end
