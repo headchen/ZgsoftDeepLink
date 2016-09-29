@@ -1,4 +1,4 @@
-﻿#Deep Link Cordova插件
+#Deep Link Cordova插件
 
 通过UrlSchema来实现 deeplink的cordova 插件  
 
@@ -16,6 +16,24 @@ IOS除了安装插件到指定位置之外，需要手动修改如下内容：
 1. 编辑-info.plist ，增加：ZgsoftDeferredDeepLinkUrl  http://dev.jxcsoft.com/webapi/test.html（把这个替换为恢复链接的相关地址，在此地址中读取cookie并转向：urlscheme://xxxxx即可）。
 2. 编辑-info.plist: 增加 URL types/item 0/URL Schemes/item 0: ygyjs(这里为响应的CustomScheme)
 3. Universal Link: 配置，请参阅苹果响应的文档即可。
+
+4. 修改AppDelegate.m 文件如下：
+
+``` objective-c
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
+{
+CGRect screenBounds = [[UIScreen mainScreen] bounds];
+
+//.....这事原来的代码，在下加上如下：
+
+//add zgsoftDeepLink
+
+[self restoreDeepLink];
+
+return YES;
+
+}
+```
 
 # 如何调用  
 
