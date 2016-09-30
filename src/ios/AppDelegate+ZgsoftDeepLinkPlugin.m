@@ -13,7 +13,7 @@
 /**
  *  Plugin name in config.xml
  */
-static NSString *const PLUGIN_NAME = @"ZgsoftDeepLinkPlugin";
+static NSString *const PLUGIN_NAME = @"ZgsoftDeepLink";
 static NSString *const DEEPLINK_COOKIE_URL_KEY= @"ZgsoftDeferredDeepLinkUrl";
 
 
